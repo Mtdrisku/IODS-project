@@ -1,5 +1,6 @@
 ---
 title: "IODS course project"
+author: "Matilda Riskumäki"
 output:
   html_document:
     theme: cosmo

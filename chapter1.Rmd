@@ -9,5 +9,11 @@
 date()
 
 ```
-The text continues here.
+I heard from my colleague about the **Introduction to Open Data Science**. She warmly recommended the course which is why I signed up for autumn term 2021.  
 
+I am looking forward to learning more about *open data science* and best practice for data analysis in order to make my work easily accessible and readable for my colleagues.
+
+***
+
+## Find the link to my GitHub pages here:
+[Mtdrisku](https://github.com/Mtdrisku/IODS-project)
