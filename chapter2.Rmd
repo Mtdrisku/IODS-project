@@ -1,4 +1,5 @@
-# Insert chapter 2 title here
+# Week 2: Regression and model validation
+
 
 *Describe the work you have done this week and summarize your learning.*
 
@@ -10,4 +11,92 @@
 date()
 ```
 
-Here we go again...
+  
+## 1) Introduction to and exploration of the data
+
+The data used for this exercise is derived from a study exploring the relationship between learning approaches and student's achievements in an introductory statistics course in Finland conducted during years 2014 and 2015. Students in an introductory statistics course filled in a questionnaire exploring their learning approaches and study skills. The student's achievements on the course were measured by the points they received in the exams. Only a part of the original data will be used in this exercise and is explored below. This smaller data set is in a data frame called *learning2014*.
+
+```{r}
+# import the data 
+learning2014 <- read.table("./Data/learning2014.txt", sep = "\t")
+
+# structure of the data frame
+str(learning2014) 
+```
+
+```{r}
+colSums(is.na(learning2014)) # number of missing values in the data
+```
+
+There are 166 observations by 7 variables and no missing data in the data set.
+
+Variables *age* and *gender* are self-explanatory, but the other 5 variables are explained below:
+
+- **attitude**: student's attitude towards statistics 
+- **surf**: surface approach for learning --- memorizing without understanding (lack of purpose, unrelated memorizing)
+- **deep**: deep approach for learning --- intention to maximize understanding (relating ideas, use of evidence)
+- **stra**: strategic approach for learning --- maximizing the chance of achieving the highest possible grades (organized studying and time management)
+- **points**: points received in the exams of the course (measure of student's achievements)
+
+Explanations for the variables are derived from [here](https://www.slideshare.net/kimmovehkalahti/the-relationship-between-learning-approaches-and-students-achievements-in-an-introductory-statistics-course-in-finland).
+
+  
+### Graphical overview of the data
+```{r}
+# first upload the libraries
+library(ggplot2)
+library(GGally)
+
+# now the graph
+ggpairs(learning2014, mapping = aes(col = gender, alpha = 0.5), 
+        lower = list(combo = wrap("facethist", bins = 20)))
+
+# summaries of the variables in the data
+summary(learning2014)
+```
+
+The number of females is almost twice the number of males in the data, but there seems to be no significant difference between the females and males, except a slightly lower values in *attitude* seen in females compared to males (see the box plots on the top panel in the paired plot). However, this might be due to the lower number of male participants in the data. The *age* is between 17 -- 55, but most of the participants fall below age 30. The rest of the variables (*attitude, deep, stra, surf, points*) seem to be close to normal distribution. Variables *points* and *attitude* correlate positively, while there is slight negative correlation between *deep* and *surf*. This negative correlation is only seen in the male participants. 
+
+
+  
+## 2) Regression model
+
+We will use regression analysis to see if we could build a model to predict *points* from the other variables. The dependent variable (response variable) here is *points* and we will choose three possible explanatory variables to start building the model. The three explanatory variables will be *attitude, stra* and *deep*.
+
+```{r}
+# We will start building the model using three explanatory variables
+M1 <- lm(points ~ 1 + attitude + stra + deep, data = learning2014)
+# Show a summary of the fitted model
+summary(M1)
+```
+
+According to the model summary, *attitude* shows a significant relationship with *points* in the model, meaning that *attitude* could be used to predict *points*. Together *attitude, stra* and *deep* explain 20.97% of *points* (this information is derived from the multiple R-squared).
+
+Since *stra* and *deep* did not show significant relationship with *points* a new model is build by using the significant explanatory variable *attitude* only. 
+
+```{r}
+M2 <- lm(points ~ 1 + attitude, data = learning2014)
+
+summary(M2)
+```
+
+Variable *attitude* explains 19.06% of *points* and this explanatory variable remains significant. 
+
+Next we can do model validation by drawing few diagnostic plots. Let's focus on **residuals vs fitted values**, **normal QQ-plot** and **residuals vs leverage**.
+
+```{r}
+par(mfrow=c(1,3)) # makes the plots appear in a 1x3 window
+plot(M2, which = c(1,2,5)) # 1: residuals vs fitted # 2: normal QQ-plot # 5: residuals vs leverage
+```
+
+  
+#### Plot: residuals vs fitted
+According to this plot, the fitted regression model seems to be appropriate. The residuals are spread randomly in the plot, indicating that the errors do not depend on the explanatory variable.
+
+#### Plot: normal Q-Q
+The plot indicates that the errors of the model are normally distributed, since most of the residuals follow linearity.
+
+#### Plot: residuals vs leverage
+No single observation stands out in the plot, implicating that single observations do not have unreasonably high impact on the model.
+
+***
