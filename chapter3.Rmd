@@ -18,11 +18,11 @@ dim(students_poma)
 # variable names
 names(students_poma) 
 ```
-The data has 370 observations by 51 variables, including binary and numeric variables. Find more information about the variables [here](https://archive.ics.uci.edu/ml/datasets/Student+Performance). Separate data sets for maths and Portuguese language were merged and at the same time a number of variables were added to the data. Variables with suffix *.p* are specific for performance in Portuguese language, and with suffix *.m* in maths. Variable *alc_use* is the average of *Dalc* and *Walc* and variable *high_use* is 'TRUE' if *alc_use* is higher than 2.
+The data has 370 observations by 51 variables, including binary and numeric variables. Find more information about the variables [here](https://archive.ics.uci.edu/ml/datasets/Student+Performance). Separate data sets for maths and Portuguese language classes were merged and at the same time a number of variables were added to the data. Variables with suffix *.p* are specific for performance in Portuguese language, and with suffix *.m* in maths. Variable *alc_use* is the average of *Dalc* and *Walc* and variable *high_use* is 'TRUE' if *alc_use* is higher than 2.
 
-We will to study the relationship between high/low alcohol consumption and some of the variables. Let's choose four variables for the purpose: *sex, absences, failures* and *G3*. With choosing these variables, I'm hypothesizing that high alcohol consumption leads to increased occasions of absences and failures in the classes and lower grades in the final exam (*G3*). Sex might also have an impact on alcohol consumption, e.g. males showing more often high alcohol consumption compared to females. If there is a difference in alcohol consumption between males and females, this might reflect differences in the performance at maths and Portuguese language classes between males and females.
+We will to study the relationship between high/low alcohol consumption and some of the variables. Let's choose four variables for the purpose: *sex, absences, failures* and *G3*. I'm hypothesizing that high alcohol consumption leads to increased occasions of absences and failures in the classes and lower grades in the final exam (*G3*). Sex might also have an impact on alcohol consumption, and I'm guessing that males show more often high alcohol consumption compared to females.
 
-Let's explore the distributions of and relationships between these four variables and high/low alcohol consumption next.
+Let's explore the distributions and relationships between these four variables and high/low alcohol consumption next.
 
 ```{r}
 # load the libraries
@@ -52,7 +52,7 @@ p2 <- ggplot(poma_4var, aes(x = high_use, y = G3, fill = high_use)) +
 ggarrange(p1, p2, ncol = 2, common.legend = T)
 ```
 
-There is slightly higher number of females than males in the data set. However, high alcohol consumption is greater in males than than in females. The frequency of failures also appears greater in proportion with high alcohol consumption compared to low. The number of absences is higher more often in students consume high amounts of alcohol compared to the students who consume low amounts. Most of the low alcohol consumption students have been absent less than five times, when for most of the high alcohol consumption student this is less than 10. Finally, low alcohol consuming students achieve more often higher grades from the final exam compared to the high alcohol consuming students. After exploring the data, the hypothesis of high alcohol consumption leading to higher number of failures and absences and eventually lower final grades seems to hold, but the significance of this relationship is yet to be studied. Additionally, it is true that males show high alcohol consumption more often than females.
+High alcohol consumption is more common in males compared to females. The frequency of failures also appears greater in proportion with high alcohol consumption compared to low. The number of absences is higher more often in students who consume high amounts of alcohol compared to the students who consume low amounts. Most of the low alcohol consumption students have been absent less than five times, when for most of the high alcohol consumption student this is less than 10. Finally, low alcohol consuming students achieve more often higher grades from the final exam compared to the high alcohol consuming students. After exploring the data, the hypothesis of high alcohol consumption leading to higher number of failures and absences and eventually lower final grades seems to hold, but the significance of this relationship is yet to be studied.
 
 
 ## 2) Logistic regression
@@ -76,7 +76,7 @@ CI <- confint(M1) %>% exp
 
 cbind(OR, CI) # prints out the ORs with their CIs
 ```
-The logistic regression model suggests that males have significantly higher probability for high alcohol consumption compared to females. Students showing high alcohol consumption are also more likely to fail in the classes and be absent from the school. These results were significant. However, high alcohol consumption is not affecting the final grade. The odds ratio for sex indicates a student showing high alcohol consumption is 2.7 times more likely to be male than female. The odds ratios indicate that a person is 1.65 times more likely to fail a class and 1.1 times more likely to be absent if their alcohol consumption is high.
+The logistic regression model suggests that males have significantly higher probability for high alcohol consumption compared to females. Students showing high alcohol consumption are also more likely to fail in the classes and be absent from the school. These results were significant. However, high alcohol consumption is not affecting the final grade. The odds ratio for sex indicates a student showing high alcohol consumption is 2.7 times more likely to be male. The odds ratios indicate that a person is 1.65 times more likely to fail a class and 1.1 times more likely to be absent if their alcohol consumption is high.
 
 Let's modify the model so that it includes only the variables that showed statistically significant relationship with high/low alcohol consumption. Then we will explore the predictive power of this model.
 ```{r}
