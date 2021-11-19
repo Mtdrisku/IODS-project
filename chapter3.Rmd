@@ -113,3 +113,4 @@ loss_func <- function(class, prob) {
 # call loss_func to compute the average number of wrong predictions in the data
 loss_func(class = poma_4var$high_use, prob = 0)
 ```
+The model classifies 30% of the individuals inaccurately. This inaccuracy is best seen in classifying more student to not have high alcohol consumption as compared to the true values (see the plot). 
