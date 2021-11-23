@@ -1,0 +1,75 @@
+# Week 4: Clustering and classification
+
+```{r}
+date()
+```
+
+This week we will use the data set *Boston* provided in the R package *MASS*. The R documentation file for the data can be found [here](https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/Boston.html). 
+
+```{r}
+# load the data 
+library(MASS)
+
+# dimensions
+dim(Boston) # 506 observations by 14 variables
+
+# structure
+str(Boston) # a data.frame containing numerical data
+
+# two of the variables are integers, let's check their unique values
+unique(Boston$chas)
+unique(Boston$rad)
+```
+
+### Overview of the data
+```{r fig.height= 12, fig.width= 12}
+# load libraries
+library(ggplot2)
+library(GGally)
+
+# graphical overview of the data
+ggpairs(Boston, upper = list(continuous = wrap("cor", size=4)))
+
+# summaries
+summary(Boston)
+```
+
+Most of the variables are continuous data, except *chas* and *rad* which are integers. The variables have different distributions and only *rm* shows normal distribution. Variables *indus* and *tax* show bimodal distribution, with most of the values falling in the low or the high end of the scale, and less in the middle. Variables *crim*, *zn*,  *nox*, *dis*, *lstat* and *medv* are more or less left-skewed whereas variables *age*, *pratio* and *black* are right-skewed. There is strong positive correlation between many of the variables, as between *rm* and *medv*, and between *nox* and *age*, and strong negative correlation between as between *rm* and *lstat*, and between *lstat* and *medv*.
+
+
+### Modifing the data set
+
+```{r}
+# standardize the data
+boston_scaled <- as.data.frame(scale(Boston))
+
+summary(boston_scaled)
+```
+The data was standardized by scaling the variables, that is, the column means were subtracted from the corresponding columns and the difference divided by standard deviation. Now the values span between negative and positive, and the difference between the minimum and the maximum value is not as great. Next we will make variable *crim* into a categorical variable and divide the data set into a training set and a test set.
+
+```{r}
+# load dplyr
+library(dplyr)
+
+# create categories out of the numerical vector and use the quantiles as break points
+bins <- quantile(boston_scaled$crim)
+
+# create categorical variable 'crime' out of 'bins'
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = T)
+
+# replace 'crim' with the categorical variable 'crime'
+boston_scaled <- dplyr::select(boston_scaled, -crim) # remove 'crim'
+boston_scaled <- data.frame(boston_scaled, crime) # add 'crime'
+
+names(boston_scaled) # check the variable names again
+
+# create training data set using 80% of the data
+n <- nrow(boston_scaled) # number of rows in the data set
+n80 <- sample(n, size = n * 0.8) # randomly choose 80% of the rows
+train <- boston_scaled[n80,] # training set
+
+# create test data set without crime variable
+test <- boston_scaled[-n80,] 
+crime_categs <- test$crime # save the crime categories into a new object
+test <- dplyr::select(test, -crime) # remove variable crime 
+```
