@@ -22,7 +22,7 @@ unique(Boston$rad)
 ```
 
 ### Overview of the data
-```{r fig.height= 12, fig.width= 12}
+```{r fig.height= 15, fig.width= 15}
 # load libraries
 library(ggplot2)
 library(GGally)
@@ -45,6 +45,7 @@ boston_scaled <- as.data.frame(scale(Boston))
 
 summary(boston_scaled)
 ```
+
 The data was standardized by scaling the variables, that is, the column means were subtracted from the corresponding columns and the difference divided by standard deviation. Now the values span between negative and positive, and the difference between the minimum and the maximum value is not as great. Next we will make variable *crim* into a categorical variable and divide the data set into a training set and a test set.
 
 ```{r}
@@ -68,8 +69,71 @@ n <- nrow(boston_scaled) # number of rows in the data set
 n80 <- sample(n, size = n * 0.8) # randomly choose 80% of the rows
 train <- boston_scaled[n80,] # training set
 
-# create test data set without crime variable
+# create test data set
 test <- boston_scaled[-n80,] 
+```
+
+## Linear discriminant analysis 
+
+We will fit a linear discriminant analysis (LDA) on the train set and use *crime* as the target variable. All the other variables are predictor variables in the analysis. The *crime* categories will be predicted from the test data set using the LDA model. 
+
+```{r fig.height=10, fig.width=10}
+# linear discriminant analysis fit
+lda.fit <- lda(crime ~ ., data = train)
+
+# draw a biplot
+# function for the biplot arrows
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "orange", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+
+# change the 'crime' classes to numeric
+classes <- as.numeric(train$crime)
+
+# draw the plot
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 1) # add the arrows
+
+# save the 'crime' categories from the test set and remove the variable from the set
 crime_categs <- test$crime # save the crime categories into a new object
 test <- dplyr::select(test, -crime) # remove variable crime 
+
+# predict the crime categories in the test set
+lda.pred <- predict(lda.fit, newdata = test)
+
+# the results
+table(correct = crime_categs, predicted = lda.pred$class)
+```
+
+The LDA model fitted using 80% of the original data set performs quite well in predicting the categories of the *crime* variable. The lowest and the highest crime rates best predicted, but the two categories between these rates are not as easily correctly predicted by the LDA model. 
+
+
+## Clustering 
+
+```{r fig.height=12, fig.width=12}
+# reload the Boston data set
+data('Boston')
+
+# scale the data
+boston_scaled_2 <- scale(Boston)
+
+# calculate distance between the observations
+dist_eu <- dist(boston_scaled_2, method = "euclidean")
+
+# k-means clustering
+library(factoextra)
+set.seed(12345)
+
+fviz_nbclust(boston_scaled_2, kmeans, method = "wss") # find the optimal amount of clusters
+km <- kmeans(Boston, centers = 3) # optimal number of clusters is 3
+km # print the output
+
+# plot the clusters in a pairplot
+pairs(Boston[1:7], col = km$cluster) # show the plot in two halves to make it easier to see
+pairs(Boston[8:14], col = km$cluster)
 ```
