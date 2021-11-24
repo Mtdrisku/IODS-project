@@ -115,7 +115,7 @@ The LDA model fitted using 80% of the original data set performs quite well in p
 
 ## Clustering 
 
-```{r fig.height=12, fig.width=12}
+```{r fig.height=15, fig.width=15, setup, warning=FALSE}
 # reload the Boston data set
 data('Boston')
 
@@ -128,12 +128,13 @@ dist_eu <- dist(boston_scaled_2, method = "euclidean")
 # k-means clustering
 library(factoextra)
 set.seed(12345)
-
 fviz_nbclust(boston_scaled_2, kmeans, method = "wss") # find the optimal amount of clusters
 km <- kmeans(Boston, centers = 3) # optimal number of clusters is 3
 km # print the output
 
-# plot the clusters in a pairplot
-pairs(Boston[1:7], col = km$cluster) # show the plot in two halves to make it easier to see
-pairs(Boston[8:14], col = km$cluster)
+# plot the clusters in a pair plot
+ggpairs(Boston, mapping = aes(col = as.factor(km$cluster), alpha = 0.5),
+        upper = list(continuous = wrap("cor", size = 4)))
 ```
+
+Cluster 3 (blue points) seems to divert from the other two clusters (green and red points).
