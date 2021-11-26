@@ -21,7 +21,7 @@ unique(Boston$chas)
 unique(Boston$rad)
 ```
 
-### Overview of the data
+## 1) Overview of the data
 ```{r fig.height= 15, fig.width= 15}
 # load libraries
 library(ggplot2)
@@ -37,7 +37,7 @@ summary(Boston)
 Most of the variables are continuous data, except *chas* and *rad* which are integers. The variables have different distributions and only *rm* shows normal distribution. Variables *indus* and *tax* show bimodal distribution, with most of the values falling in the low or the high end of the scale, and less in the middle. Variables *crim*, *zn*,  *nox*, *dis*, *lstat* and *medv* are more or less left-skewed whereas variables *age*, *pratio* and *black* are right-skewed. There is strong positive correlation between many of the variables, as between *rm* and *medv*, and between *nox* and *age*, and strong negative correlation between as between *rm* and *lstat*, and between *lstat* and *medv*.
 
 
-### Modifing the data set
+## 2) Modifing the data set
 
 ```{r}
 # standardize the data
@@ -73,7 +73,7 @@ train <- boston_scaled[n80,] # training set
 test <- boston_scaled[-n80,] 
 ```
 
-## Linear discriminant analysis 
+## 3) Linear discriminant analysis 
 
 We will fit a linear discriminant analysis (LDA) on the train set and use *crime* as the target variable. All the other variables are predictor variables in the analysis. The *crime* categories will be predicted from the test data set using the LDA model. 
 
@@ -113,7 +113,7 @@ table(correct = crime_categs, predicted = lda.pred$class)
 The LDA model fitted using 80% of the original data set performs quite well in predicting the categories of the *crime* variable. The lowest and the highest crime rates best predicted, but the two categories between these rates are not as easily correctly predicted by the LDA model. 
 
 
-## Clustering 
+## 4) Clustering 
 
 ```{r fig.height=15, fig.width=15, setup, warning=FALSE}
 # reload the Boston data set
