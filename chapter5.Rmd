@@ -1,0 +1,119 @@
+# Week 5: Dimensionality and reduction techniques
+
+```{r}
+date()
+```
+
+This week we will analyse the *human* data set originating from the United Nations Development Programme. The data set investigates the development of a country by focusing on the citizens and their capabilities instead of the typically used economic growth. More information can be found [here](http://hdr.undp.org/en/content/human-development-index-hdi) and [here](http://hdr.undp.org/sites/default/files/hdr2015_technical_notes.pdf). 
+
+## Data exploration
+```{r}
+# load the libraries
+library(ggplot2)
+library(GGally)
+library(dplyr)
+library(tidyverse)
+
+# import the data
+human <- read.table("Data/human.txt", sep = "\t")
+
+# graphical overview of the data
+ggpairs(human)
+
+# summaries
+summary(human)
+```
+Variables are explained below
+
+- **Edu2.FM** - the ratio of female and male populations with secondary education
+- **Labo.FM** - the ratio of labour force participation of females and males
+- **Edu.exp** - expected years of education
+- **Life.exp** - life expectancy at birth
+- **GNI** - gross national income per capita
+- **Mat.mor** - maternal mortality ratio
+- **Ado.birth** - adolescent birth rate
+- **Parli.FM** - percentage of female representation in the parliament
+
+All variables in this modified *human* data set are numeric. Expected years of education (*Edu.exp*) is normally distributed whereas distributions of the other variables are more or less left-skewed (*GNI, Mat.mor, Ado.birth, Parli.F*) or right-skewed (*Labo.FM, Life.exp*). Notice that *GNI* and *Mat.mor* have large variance and most values are at the lower end of the scale. *Edu2.FM* correlates positively with *Edu.exp* and *Life.exp*, and negatively with *Mat.mor* and *Ado.birth*. *Edu.exp* shows strong positive correlation with *Life.exp*, and strong negative correlation with *Mat.mor* and *Ado.birth*. Finally, there is strong negative correlation between *Life.exp*  *Mat.mor* and *Ado.birth*, and between *Ado.birth* and *Mat.mor*.
+
+
+## Principal component analysis
+```{r fig.height= 8, fig.width= 8}
+# PCA
+pca_human <- prcomp(human)
+summary(pca_human) # variability captured by the PCs
+
+# PCA biplot
+# create the percentages of variance for PC1 and 2
+pcs1 <- summary(pca_human)
+pcs1 <- round(100*pcs1$importance[2,], digits = 1)
+pcs1 <- paste0(names(pcs1), " (", pcs1, "%)")
+# draw the biplot
+par(mar=c(5,5,5,5)) # make larger margins
+biplot(pca_human, xlab = pcs1[1], ylab = pcs1[2]) # the plot
+abline(v = 0, lty = 2) # adds vertical dashed line at position 0 on the x axis
+mtext(c("High", "Low", "Gross National Income (GNI)"), 
+      side = c(3,3,3), line = c(2,2,4), adj = c(0, 1, NA), 
+      col = c("red", "blue", "black")) # add text in the top margin
+
+# standardized values
+human_std <- scale(human)
+
+# PCA on standardized values
+pca_std <- prcomp(human_std)
+summary(pca_std)
+
+# PCA biplot on standardized values
+# create the percentages of variance for PC1 and 2
+pcs2 <- summary(pca_std)
+pcs2 <- round(100*pcs2$importance[2,], digits = 1)
+pcs2 <- paste0(names(pcs2), " (", pcs2, "%)")
+# draw the biplot
+par(mar=c(5,5,5,5))
+biplot(pca_std, xlab = pcs2[1], ylab = pcs2[2])
+abline(v = 0, lty = 2)
+mtext(c("High maternal mortality", "and adolescent birth ratio", "High expected years of education,", "ratio of females with secondary education,", "life expectancy at birth and gross national income"), 
+      side = 3, line = c(3,2,4,3,2), adj = c(1,1,0,0,0))
+```
+The PCA plot looks very different whether the values are standardized or not. In the first plot (not standardized) there is only one variable, the *GNI* driving the differences between countries. As we saw in the data exploration part, *GNI* shows high large variance, therefore PCA assumes that this variable is more important than the other variables with smaller variance. That's why scaling the variables before PCA is a good idea and as seen in the second PCA plot (standardized), the result looks quite different. The standardized PCA plot indicates that countries differ from each other maternal mortality ratio, adolescent birth rate, expected years of education, ratio of females with secondary education, life expectancy at birth and gross national income according to PC1, which explains 53.6% of the variation between the countries. PC2 on the other hand separates the countries according to female/male ratio in labor force and female representation in the parliament. This explains 16.2% of the variation between the countries.
+
+
+## Multiple correspondence analysis
+
+Let's do a multiple correcpondence analysis using the *tea* data set from the R packages [FactoMineR](http://factominer.free.fr). The data set is based on a questionnaire on tea consumption collected from 300 individuals. The data set is exploring how these individuals drink their tea and how they perceive it. 
+```{r}
+# load the tea data
+library(FactoMineR)
+data(tea)
+
+# structure and dimensions
+dim(tea)
+str(tea)
+```
+
+All variables are factor variables (except age) and there are many (36). It was difficult to find a sensible way of visualizing this data so I jump directly into the multiple correspondence analysis part.
+
+```{r fig.height= 8, fig.width= 8}
+# multiple correspondence analysis (MCA) formula
+mca_tea <- MCA(tea[,-19], graph = FALSE) # leave out variable "age" since it's not categirocal
+summary(mca_tea)
+
+# plot the results 
+plot(mca_tea, invisible=c("ind"))
+```
+
+```{r}
+# divide the variables to three groups
+# let's group variables concerning when, where and how tea is consumed/enjoyed
+wwh_tea <- tea[,1:18]
+# let's make another group on supplementary variables (such as health realted variables)
+suppl_tea <- tea[,20:36]
+# notice that the only integer variable in the data (age) is not included, because there is a categorical variable of age groups
+
+# graphical overview
+# first convert the dataframes from the wide format to long format
+long_wwh <- wwh_tea %>% gather(Active.Qs, Answer, 1:18)
+long_suppl <- suppl_tea %>% gather(Suppl.Qs, Answer, 1:17)
+
+
+```

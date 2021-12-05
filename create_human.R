@@ -1,10 +1,10 @@
-#### IODS RStudio Exercise 4 #####
+#### IODS RStudio Exercise 4 and 5 #####
 
 
-# Date: 26.11.2021
+# Date: 29.11.2021
 # Author: Matilda Riskumäki
 # Description: This Rscript includes the code for carrying out the IODS exercise 
-# data wrangling part for week 4. 
+# data wrangling part for weeks 4 and 5. 
 
 # Working directory----
 setwd("/Users/matirisk/Desktop/PhD-kurssit/2021_IODS/IODS-project/Data")
@@ -12,7 +12,7 @@ setwd("/Users/matirisk/Desktop/PhD-kurssit/2021_IODS/IODS-project/Data")
 # Libraries----
 library(dplyr)
 
-
+#### Week 4 ####
 # Importing and exploring the data----
 
 hd <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human_development.csv", 
@@ -63,4 +63,20 @@ human <- inner_join(hd, gii, by = "Country")
 
 # save the data in your 'Data' folder
 getwd() # check if your working directory is in the 'Data' folder
+write.table(human, file = "human.txt", sep = "\t")
+
+
+#### Week 5 ####
+human <- read.table("human.txt", sep = "\t") # import the joined data
+
+# Mutate the data----
+human$GNI <- as.numeric(sub("," , "", human$GNI)) # the values include comma as a thousands separator and we want to get rid of that
+human <- dplyr::select(human, c("Country", "Edu2.FM", "Labo.FM", "Edu.exp", "Life.exp", "GNI", "Mat.mor", "Ado.birth", "Parli.F"))
+human <- na.omit(human)
+rownames(human) <- human$Country
+human <- human[,-1]
+rownames(human) # 7 last rows relate to regions rather than countries
+human <- human[-c(156:162),] # remove those 7 rows
+
+# save the modified data
 write.table(human, file = "human.txt", sep = "\t")
