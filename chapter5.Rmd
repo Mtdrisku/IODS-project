@@ -101,19 +101,3 @@ summary(mca_tea)
 # plot the results 
 plot(mca_tea, invisible=c("ind"))
 ```
-
-```{r}
-# divide the variables to three groups
-# let's group variables concerning when, where and how tea is consumed/enjoyed
-wwh_tea <- tea[,1:18]
-# let's make another group on supplementary variables (such as health realted variables)
-suppl_tea <- tea[,20:36]
-# notice that the only integer variable in the data (age) is not included, because there is a categorical variable of age groups
-
-# graphical overview
-# first convert the dataframes from the wide format to long format
-long_wwh <- wwh_tea %>% gather(Active.Qs, Answer, 1:18)
-long_suppl <- suppl_tea %>% gather(Suppl.Qs, Answer, 1:17)
-
-
-```
