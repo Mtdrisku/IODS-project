@@ -1,0 +1,77 @@
+# Week 6: Analysis of longitudinal data
+
+```{r}
+date()
+```
+
+We will analyse longitudinal data with the help of two data sets, the **RATS** and the **BPRS**. The RATS data set investigates the effect of different diets on the body mass in 16 rats. The rats were separated into three groups, each group following a different diet, and their body mass was measured repeatedly over a 9 week period. The BPRS data set investigates suspection of schizophrenia utilizing the brief psychiatric rating scale (bprs) in 40 male subjects assigned to two treatment groups. The bprs was measured weekly over an eight week period. The above mentioned data sets are explored and analysed in separate sections below. Different analysis methods for longitudinal data will be used for the two sets.
+
+```{r}
+# load libraries
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(ggpubr)
+```
+
+## The RATS: a summary measure analysis
+```{r}
+# import the data and look at the structure
+RATS_long <- read.table("Data/rats_long.txt", sep = "\t")
+str(RATS_long)
+
+# convert convert categorical variables to factor
+RATS_long %<>% mutate_at(c("ID", "Group", "wd"), factor)
+
+# data visualization 
+p_rats <- ggplot(RATS_long, aes(x = time, y = weight, color = Group)) + 
+  geom_point() + geom_smooth(se = F) +
+  theme_minimal()
+p_rats
+```
+
+It's clear that rats in diet group 1 have a lower body mass than rats in diet groups 2 and 3. One of the rats in diet group 2 has greater body mass than the other rats, and while the rest of the rats in this diet group have a lower body mass than the rats in diet group 3, the one rat with greater body mass has greater mass than any rat in the diet group 3. This shifts the mean body mass in group 2 closer to the level of group 3 mean body mass. Let's remove the outlier in diet group 2 so the groups are more comparable with each other.
+
+```{r}
+# find the ID for the outlier by adding the ID numbers on the plot above
+p_rats + geom_text(aes(label = ID))
+
+# in each case rat number 12 is an outlier in diet group 2
+# let's remove this rat from the data
+RATS_long <- RATS_long[!(RATS_long$ID == "12"), ]
+```
+
+Let's use the summary measure analysis to investigate the differences in weight gain between the three diet groups. For that purpose we will look at the difference in weight between the first measurement (WD1) and the last (WD64) in the three diet groups.
+
+```{r}
+# make a new data set only including the first and the last measurement
+RATS_comp <- RATS_long[RATS_long$wd == "WD1" | RATS_long$wd == "WD64", ]
+
+# plot the comparisons
+ggplot(RATS_comp, aes(x = Group, y = weight, col = wd)) + 
+  geom_boxplot() + stat_compare_means(method = "t.test") +
+  theme_minimal()
+```
+
+Diet 1 and 2 significantly affects the weight gain when investigating the difference in weight between the first and the last measurement. Weight gain in diet group 3 is only nearly significant.
+
+
+## BPRS: linear mixed effects models
+```{r}
+# import the data and look at the structure
+BPRS_long <- read.table("Data/bprs_long.txt", sep = "\t")
+str(BPRS_long)
+
+# convert categorical variables to factor
+BPRS_long %<>% mutate_at(c("treatment", "subject", "weeks"), factor)
+
+# data visualization
+p1 <- ggplot(BPRS_long, aes(x = week, y = bprs, color = treatment)) + 
+  geom_point() + geom_smooth(se = F) + theme_minimal() # scatterplot with regression line
+p2 <- ggplot(BPRS_long, aes(x = treatment, y = bprs, color = treatment)) + 
+  geom_boxplot(aes(color = treatment)) + theme_minimal() # boxplot 
+
+ggarrange(p1,p2, ncol = 2)
+```
+
+Both treatments (1 and 2) help to bring down the BPRS value in the course of 8 weeks period and it seems that there is no significant difference between treatment 1 and 2. However, there is an outlier in treatment group 2 which might diminish the difference between the treatments. 
