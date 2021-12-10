@@ -12,6 +12,7 @@ library(dplyr)
 library(magrittr)
 library(ggplot2)
 library(ggpubr)
+library(lme4)
 ```
 
 ## The RATS: a summary measure analysis
@@ -74,4 +75,19 @@ p2 <- ggplot(BPRS_long, aes(x = treatment, y = bprs, color = treatment)) +
 ggarrange(p1,p2, ncol = 2)
 ```
 
-Both treatments (1 and 2) help to bring down the BPRS value in the course of 8 weeks period and it seems that there is no significant difference between treatment 1 and 2. However, there is an outlier in treatment group 2 which might diminish the difference between the treatments. 
+Both treatments (1 and 2) help to bring down the BPRS value in the course of 8-week period and it seems that there is no significant difference between treatment 1 and 2. However, there is an outlier in treatment group 2 which might diminish the difference between the treatments. Let's remove the outlier from the data before further analysis.
+
+```{r}
+# find the outlier (the maximum value for bprs) and on which row is this value
+which(BPRS_long$bprs == max(BPRS_long$bprs))
+# remove the row
+BPRS_long <- BPRS_long[-71,]
+```
+
+Let's create a linear mixed effects model on the BPRS data and investigate the effect of treatment on the bprs value in the study subjects.
+
+```{r}
+# create a random intercept and random slope model
+BPRS_lme <- lmer(bprs ~ week * treatment + (week | subject), data = BPRS_long, REML = F)
+summary(BPRS_lme)
+```
